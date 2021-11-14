@@ -4,7 +4,7 @@ use std::fs;
 const SCREEN_WIDTH : i32 = 80;
 const SCREEN_HEIGHT : i32 = 50;
 const FRAME_DURATION : f32 = 75.0;
-const DictionaryFilePath : &str = "dictionary/dictionary.json";
+const DICTIONARY_FILE_PATH : &str = "dictionary/dictionary.json";
 
 enum GameMode {
     Menu,
@@ -88,14 +88,14 @@ fn main() -> BError {
 }
 
 
-#[derive(Copy, Clone)]
+#[derive(Clone)]
 struct Entry {
     key: String,
     val: String,
 }
 
 fn ReadDictionary() -> Vec<Entry>{
-    let contents = fs::read_to_string(DictionaryFilePath)
+    let contents = fs::read_to_string(DICTIONARY_FILE_PATH)
         .expect("Error reading file");
 
     // Input into adequate data structure.
