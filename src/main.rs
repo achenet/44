@@ -1,121 +1,81 @@
 use bracket_lib::prelude::*;
-use std::fs;
-
-const SCREEN_WIDTH : i32 = 80;
-const SCREEN_HEIGHT : i32 = 50;
-const FRAME_DURATION : f32 = 75.0;
-const DICTIONARY_FILE_PATH : &str = "dictionary/dictionary.json";
 
 enum GameMode {
     Menu,
-    Play,
+    Playing,
+    Win,
 }
 
 struct State {
     mode: GameMode,
-    dico: Vec<Entry>,
-    current_word: String,
+    word: String,
     grid: Vec<char>,
 }
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
         match self.mode {
-            GameMode::Menu => self.main_menu(ctx),
-            GameMode::Play => self.play(ctx)
+            GameMode::Menu => self.menu(ctx),
+            GameMode::Playing => self.play(ctx),
+            GameMode::Win => self.win(ctx),
         }
     }
 }
 
 impl State {
-    fn new(dico: &Vec<Entry>) -> Self {
+    fn new(word: String) -> Self {
         State {
             mode: GameMode::Menu,
-            current_word: "Hi".to_string(),
-            grid:  vec!['-','i'],
-            dico: dico.to_vec(),
+            word: word,
+            grid: vec![],
         }
     }
-    fn main_menu(&mut self, ctx: &mut BTerm) {
+
+    fn win(&mut self, ctx: &mut BTerm) {
+        self.mode = GameMode::Win;
         ctx.cls();
-        ctx.print_centered(5, "'sup, dawg?");
-        let out = pretty_print_dico(&self.dico);
-        ctx.print_centered(7, out);
-
+        ctx.print_centered(5, "You win!");
         if let Some(key) = ctx.key {
-            ctx.quitting = true;
+            self.menu(ctx);
         }
     }
-    fn play(&mut self, ctx: &mut BTerm) {
-            ctx.cls();
-            ctx.print_centered(5, "Press Q to quit.");
-            ctx.print_centered(6, "Press A to win.");
 
-            if let Some(key) = ctx.key {
-                match key {
-                    VirtualKeyCode::Q => ctx.quitting = true,
-                    VirtualKeyCode::A => self.good_input(ctx),
-                    _ => self.bad_input(ctx),
+    fn play(&mut self, ctx: &mut BTerm) {
+       self.mode = GameMode::Playing;
+       ctx.cls_bg(NAVY);
+       ctx.print_centered(5, "You are currently playing.");
+       ctx.print_centered(6, &format!("The word is {}", self.word));
+       if let Some(key) = ctx.key {
+            match key {
+                VirtualKeyCode::A => self.win(ctx),
+                _ => {
+                    ctx.print_centered(5, "Press A");
                 }
             }
+       }
     }
-    fn good_input(&mut self, ctx: &mut BTerm) {
+
+    fn menu(&mut self, ctx: &mut BTerm) {
+        self.mode = GameMode::Menu;
         ctx.cls();
-        ctx.print_centered(5, "You win! Press 'a' to play again.");
+        ctx.print_centered(5, "You in the menu now, son.");
+        ctx.print_centered(8, "(P) Play Game");
+        ctx.print_centered(9, "(Q) Quit Game");
+
         if let Some(key) = ctx.key {
             match key {
-                VirtualKeyCode::A=> self.play(ctx),
-                _ => ctx.quitting = true,
+                VirtualKeyCode::P => self.play(ctx),
+                VirtualKeyCode::Q => ctx.quitting = true,
+                _ => {}
             }
-        }
-    }
-    fn bad_input(&mut self, ctx: &mut BTerm) {
-        ctx.cls();
-        ctx.print_centered(5, "nope.");
-        if let Some(key) = ctx.key {
-            self.play(ctx);
         }
     }
 }
 
 fn main() -> BError {
     let context = BTermBuilder::simple80x50()
-        .with_title("Vidya Gaems!")
+        .with_title("Guess the word!")
         .build()?;
 
-    let mut d = ReadDictionary();
-    main_loop(context, State::new(&d))
-}
-
-
-#[derive(Clone)]
-struct Entry {
-    key: String,
-    val: String,
-}
-
-fn ReadDictionary() -> Vec<Entry>{
-    let contents = fs::read_to_string(DICTIONARY_FILE_PATH)
-        .expect("Error reading file");
-
-    // Input into adequate data structure.
-    // Let's try an array of a certain length.
-
-    let lines = contents.split("\n");
-    // Create an array of size len(lines)
-    let mut dico = Vec::new();
-    for (idx, line) in lines.enumerate() {
-        dico.push( Entry { key: "smoke weed".to_string(), val: line.to_string()})
-    }
-    dico
-}
-
-// Take a dico and 'flatten' it into a string.
-fn pretty_print_dico(dico: &Vec<Entry>) -> String {
-    let mut out = "".to_string();
-    for entry in dico {
-        out = out + &entry.key;
-        out = out + &entry.val;
-    }
-    out
+    main_loop(context, State::new("wanderweg!".to_string()))
 }
