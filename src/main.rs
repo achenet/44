@@ -35,16 +35,21 @@ impl State {
         self.mode = GameMode::Win;
         ctx.cls();
         ctx.print_centered(5, "You win!");
+        ctx.print_centered(6, "Press any key to go back to the menu. :)");
         if let Some(key) = ctx.key {
             self.menu(ctx);
         }
     }
 
+    // TODO: Make this an actual game
     fn play(&mut self, ctx: &mut BTerm) {
        self.mode = GameMode::Playing;
        ctx.cls_bg(NAVY);
        ctx.print_centered(5, "You are currently playing.");
        ctx.print_centered(6, &format!("The word is {}", self.word));
+
+       self.show_grid(ctx);
+
        if let Some(key) = ctx.key {
             match key {
                 VirtualKeyCode::A => self.win(ctx),
@@ -53,6 +58,13 @@ impl State {
                 }
             }
        }
+    }
+
+    fn show_grid(&mut self, ctx: &mut BTerm) {
+        // Make the grid using self word
+        let grid = "_ _ _ _ _ _ _ _";
+        // Print it
+        ctx.print_centered(8, grid);
     }
 
     fn menu(&mut self, ctx: &mut BTerm) {
