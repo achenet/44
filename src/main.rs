@@ -51,18 +51,29 @@ impl State {
        self.show_grid(ctx);
 
        if let Some(key) = ctx.key {
-            match key {
-                VirtualKeyCode::A => self.win(ctx),
-                _ => {
-                    ctx.print_centered(5, "Press A");
-                }
+            let good_key = check_key(key);
+            ctx.print_centered(7, format!("good key: {}", good_key));
+            if good_key {
+                self.win(ctx);
+            } else {
+                self.bad_guess(ctx);
             }
        }
     }
 
+    fn bad_guess(&mut self, ctx: &mut BTerm) {        
+        ctx.print_centered(7, "bad guess, press any key to continue");
+        if let Some(key) = ctx.key {
+            self.menu(ctx)
+        }
+    }
+
     fn show_grid(&mut self, ctx: &mut BTerm) {
         // Make the grid using self word
-        let grid = "_ _ _ _ _ _ _ _";
+        let mut grid = String::new();
+        for value in vec!["wander", "weg"] {
+            grid += " _";
+        }
         // Print it
         ctx.print_centered(8, grid);
     }
@@ -81,6 +92,17 @@ impl State {
                 _ => {}
             }
         }
+    }
+}
+
+fn check_key(key: VirtualKeyCode) -> bool {
+    match key {
+        VirtualKeyCode::W => return true,
+        VirtualKeyCode::A => return true,
+        VirtualKeyCode::N => return true,
+        VirtualKeyCode::D => return true,
+        VirtualKeyCode::E => return true,
+        _ => return false,
     }
 }
 
