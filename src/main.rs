@@ -36,7 +36,9 @@ impl State {
         ctx.cls();
         ctx.print_centered(5, "You win!");
         ctx.print_centered(6, "Press any key to go back to the menu. :)");
-        if let Some(key) = ctx.key {
+        // It doesn't actually seem to pause here, it just goes straight back to main
+        // menu.
+        if let Some(_key) = ctx.key {
             self.menu(ctx);
         }
     }
@@ -53,25 +55,26 @@ impl State {
        if let Some(key) = ctx.key {
             let good_key = check_key(key);
             ctx.print_centered(7, format!("good key: {}", good_key));
+            // How could I insert a short pause here? 
             if good_key {
                 self.win(ctx);
             } else {
-                self.bad_guess(ctx);
+       //         self.bad_guess(ctx);
             }
        }
     }
 
     fn bad_guess(&mut self, ctx: &mut BTerm) {        
         ctx.print_centered(7, "bad guess, press any key to continue");
-        if let Some(key) = ctx.key {
-            self.menu(ctx)
+        if let Some(_key) = ctx.key {
+            self.play(ctx)
         }
     }
 
     fn show_grid(&mut self, ctx: &mut BTerm) {
         // Make the grid using self word
         let mut grid = String::new();
-        for value in vec!["wander", "weg"] {
+        for _value in vec!["wander", "weg"] {
             grid += " _";
         }
         // Print it
