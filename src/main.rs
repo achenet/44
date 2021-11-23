@@ -10,6 +10,7 @@ struct State {
     mode: GameMode,
     word: String,
     grid: Vec<char>,
+    bad_guess: bool,
 }
 
 impl GameState for State {
@@ -28,6 +29,7 @@ impl State {
             mode: GameMode::Menu,
             word: word,
             grid: vec![],
+            bad_guess: false, 
         }
     }
 
@@ -35,11 +37,14 @@ impl State {
         self.mode = GameMode::Win;
         ctx.cls();
         ctx.print_centered(5, "You win!");
-        ctx.print_centered(6, "Press any key to go back to the menu. :)");
+        ctx.print_centered(6, "Press M to go back to the menu. :)");
         // It doesn't actually seem to pause here, it just goes straight back to main
         // menu.
-        if let Some(_key) = ctx.key {
-            self.menu(ctx);
+        if let Some(key) = ctx.key {
+            match key {
+                VirtualKeyCode::M => self.menu(ctx),
+                _ => {},
+            }
         }
     }
 
@@ -49,27 +54,21 @@ impl State {
        ctx.cls_bg(NAVY);
        ctx.print_centered(5, "You are currently playing.");
        ctx.print_centered(6, &format!("The word is {}", self.word));
-
+       if self.bad_guess {
+        ctx.print_centered(7, "Incorrect guess, try again.");
+       }
        self.show_grid(ctx);
 
        if let Some(key) = ctx.key {
             let good_key = check_key(key);
-            ctx.print_centered(7, format!("good key: {}", good_key));
-            // How could I insert a short pause here? 
             if good_key {
                 self.win(ctx);
             } else {
-       //         self.bad_guess(ctx);
+                self.bad_guess = true;
             }
        }
     }
 
-    fn bad_guess(&mut self, ctx: &mut BTerm) {        
-        ctx.print_centered(7, "bad guess, press any key to continue");
-        if let Some(_key) = ctx.key {
-            self.play(ctx)
-        }
-    }
 
     fn show_grid(&mut self, ctx: &mut BTerm) {
         // Make the grid using self word

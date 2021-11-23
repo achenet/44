@@ -1,1 +1,5 @@
-there's an infinite loop somewhere, fix it.
+Create a proper grid
+
+Show it
+
+Update grid if guess if correct
